@@ -17,6 +17,11 @@ private:
 public:
     windowOfLogin(QWidget *parent = nullptr);
     ~windowOfLogin();
+
+private:
+    void initalLoginBox();
+    void login();
+    void reset();
 };
 
 #endif // WINDOWOFLOGIN_H

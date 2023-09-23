@@ -19,5 +19,8 @@ MainWindow::~MainWindow()
 void MainWindow::resizeEvent(QResizeEvent *e)
 {
     if(m_flagOfInital==0)
+    {
         m_login->show();
+        m_flagOfInital=1;
+    }
 }
