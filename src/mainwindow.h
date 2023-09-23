@@ -2,7 +2,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+
 #include "windowOfLogin.h"
+#include "mySocket.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -15,6 +17,7 @@ class MainWindow : public QMainWindow
 private:
     Ui::MainWindow* ui;
     windowOfLogin* m_login;
+    mySocket* m_Socket;
     int m_flagOfInital;
 
 public:

@@ -5,6 +5,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , m_login(new windowOfLogin)
+    , m_Socket(new mySocket)
     , m_flagOfInital(0)
 {
     ui->setupUi(this);
@@ -13,6 +14,8 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete m_login;
+    delete m_Socket;
     delete m_login;
 }
 

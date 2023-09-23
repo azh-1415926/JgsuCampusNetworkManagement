@@ -18,6 +18,9 @@ public:
     windowOfLogin(QWidget *parent = nullptr);
     ~windowOfLogin();
 
+signals:
+    void sendInfo(const QString& account,const QString& passwd);
+
 private:
     void initalLoginBox();
     void login();

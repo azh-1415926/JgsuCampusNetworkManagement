@@ -35,10 +35,11 @@ void windowOfLogin::initalLoginBox()
 
 void windowOfLogin::login()
 {
-    QString account=ui->inputOfAccount->text();
-    QString password=ui->inputOfPassword->text();
+    static QString account=ui->inputOfAccount->text();
+    static QString password=ui->inputOfPassword->text();
     qDebug()<<"account:"<<account;
     qDebug()<<"password:"<<password;
+    emit sendInfo(account,password);
 }
 
 void windowOfLogin::reset()
