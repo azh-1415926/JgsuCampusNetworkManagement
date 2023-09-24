@@ -4,6 +4,8 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 
+#include "calcMD5.h"
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -125,7 +127,7 @@ void MainWindow::processAuthentication(const QString& response)
         int ret=json.value("ret_code").toInt();
         QString msg=json.value("msg").toString();
         qDebug()<<"ret_code : "<<ret;
-        if(ret!=2)
+        if(ret!=2&&ret!=0)
             emit loginFailed(msg);
         else
         {
@@ -144,5 +146,8 @@ void MainWindow::processManagement(const QString& response)
         int end=m_Cookie.indexOf(";");
         m_Cookie=m_Cookie.mid(begin+1,end-1-begin).trimmed();
         qDebug()<<"Cookie : "<<m_Cookie;
+        const char* str=calcMD5::toMD5(std::string(m_Password.toUtf8().data())).c_str();
+        QString encryptPasswd(str);
+        qDebug()<<"md5 : "<<encryptPasswd;
     }
 }

@@ -24,6 +24,7 @@ endif()
 
 # 搜寻源文件
 aux_source_directory(./src srcs)
+aux_source_directory(./component components)
 
 # ui 文件路径
 list(APPEND CMAKE_AUTOUIC_SEARCH_PATHS "ui")
@@ -37,6 +38,7 @@ add_executable(${PROJECT_NAME}
     # WIN32 # 若需要控制台调试可以注释这一条 # If you need a terminal for debug, please comment this statement
     ${srcs}
     ${uis}
+    ${components}
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
@@ -44,3 +46,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Network)
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Core5Compat)
 endif()
+target_include_directories(${PROJECT_NAME} PRIVATE component)
+target_include_directories(${PROJECT_NAME} PRIVATE vendor)
