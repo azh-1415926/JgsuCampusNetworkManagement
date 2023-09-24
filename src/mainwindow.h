@@ -10,15 +10,27 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
+enum class CurrentHost
+{
+    NONE=-1,
+    AUTHENTICATION=0,
+    MANAGEMENT=1
+};
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 private:
     Ui::MainWindow* ui;
-    windowOfLogin* m_login;
+    windowOfLogin* m_LoginBox;
     myHttp* m_Http;
-    int m_flagOfInital;
+    QString m_Account;
+    QString m_Password;
+    QString m_Cookie;
+    int m_FlagOfInital;
+    int m_FlagOfCookie;
+    CurrentHost m_CurrHost;
 
 public:
     MainWindow(QWidget *parent = nullptr);
@@ -36,6 +48,13 @@ signals:
 
 private:
     void initalWindow();
+    void handleUserInfo(const QString& account,const QString& passwd);
+    void goToManagement();
+    void switchHost();
+    QString getCookie(QString response);
+    void processResponse(const QString& response);
+    void processAuthentication(const QString& response);
+    void processManagement(const QString& response);
 };
 
 #endif // MAINWINDOW_H

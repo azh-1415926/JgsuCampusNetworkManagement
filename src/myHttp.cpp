@@ -30,15 +30,17 @@ void myHttp::send(const QString& method,const QString& url,const QPair<QString,i
         requestMessage.append(fields[i].first+":"+fields[i].second+"\r\n");
     requestMessage.append("\n");
     emit failed("Request : "+ requestMessage);
+    m_Socket->abort();
     m_Socket->connectToHost(serverInfo.first,serverInfo.second);
     if(!m_Socket->waitForConnected(2000))
         emit failed(errorPrefix+"Send time out!");
     m_Socket->write(requestMessage.toUtf8().constData(),requestMessage.length());
     if(!m_Socket->waitForReadyRead(2000))
         emit failed(errorPrefix+"Recv time out!");
-    char buf[512];
-    m_Socket->read(buf,sizeof(buf));
-    emit recv(buf);
+    QByteArray data=m_Socket->readAll();
+    QString response(data);
+    emit recv(response);
+    emit readed();
     m_Socket->close();
 }
 

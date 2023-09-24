@@ -20,6 +20,7 @@ public slots:
 
 signals:
     void failed(const QString& error);
+    void readed();
     void recv(const QString& response);
 
 private:
