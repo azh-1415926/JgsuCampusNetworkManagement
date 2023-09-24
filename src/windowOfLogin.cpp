@@ -2,6 +2,7 @@
 #include "./ui_windowOfLogin.h"
 
 #include <QRegularExpressionValidator>
+#include <QMessageBox>
 
 windowOfLogin::windowOfLogin(QWidget *parent)
     : QWidget(parent)
@@ -18,19 +19,28 @@ windowOfLogin::~windowOfLogin()
     delete ui;
 }
 
+
+void windowOfLogin::processLoginFailed(const QString& info)
+{
+    QMessageBox::warning(this,"Login Failed!",info);
+    reset();
+}
+
+void windowOfLogin::processLoginSuccess(const QString& info)
+{
+    QMessageBox::about(this,"Login Success!",info);
+    close();
+    QString account=ui->inputOfAccount->text();
+    QString password=ui->inputOfPassword->text();
+}
+
 void windowOfLogin::initalLoginBox()
 {
     QRegularExpressionValidator* reg = new QRegularExpressionValidator(this);
     reg->setRegularExpression(QRegularExpression(QString("\\d{1,10}")));
     ui->inputOfAccount->setValidator(reg);
-    connect(ui->buttonOfLogin,&QPushButton::clicked,this,[=]()
-    {
-        login();
-    });
-    connect(ui->buttonOfReset,&QPushButton::clicked,this,[=]()
-    {
-        reset();
-    });
+    connect(ui->buttonOfLogin,&QPushButton::clicked,this,login);
+    connect(ui->buttonOfReset,&QPushButton::clicked,this,reset);
 }
 
 void windowOfLogin::login()

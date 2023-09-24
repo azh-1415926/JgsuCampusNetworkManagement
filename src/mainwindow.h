@@ -31,7 +31,8 @@ public slots:
     ;
 
 signals:
-    ;
+    void loginFailed(const QString& info);
+    void loginSuccess(const QString& info);
 
 private:
     void initalWindow();

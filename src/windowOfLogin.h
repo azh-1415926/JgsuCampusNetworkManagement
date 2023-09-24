@@ -18,6 +18,10 @@ public:
     windowOfLogin(QWidget *parent = nullptr);
     ~windowOfLogin();
 
+public slots:
+    void processLoginFailed(const QString& info);
+    void processLoginSuccess(const QString& info);
+
 signals:
     void sendInfo(const QString& account,const QString& passwd);
 
