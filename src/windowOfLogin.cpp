@@ -35,15 +35,17 @@ void windowOfLogin::initalLoginBox()
 
 void windowOfLogin::login()
 {
-    static QString account=ui->inputOfAccount->text();
-    static QString password=ui->inputOfPassword->text();
-    qDebug()<<"account:"<<account;
-    qDebug()<<"password:"<<password;
+    QString account=ui->inputOfAccount->text();
+    QString password=ui->inputOfPassword->text();
+    ui->inputOfAccount->setReadOnly(true);
+    ui->inputOfPassword->setReadOnly(true);
     emit sendInfo(account,password);
 }
 
 void windowOfLogin::reset()
 {
+    ui->inputOfAccount->setReadOnly(false);
+    ui->inputOfPassword->setReadOnly(false);
     ui->inputOfAccount->clear();
     ui->inputOfPassword->clear();
 }

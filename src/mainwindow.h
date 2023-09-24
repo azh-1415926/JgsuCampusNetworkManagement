@@ -4,7 +4,7 @@
 #include <QMainWindow>
 
 #include "windowOfLogin.h"
-#include "mySocket.h"
+#include "myHttp.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -17,7 +17,7 @@ class MainWindow : public QMainWindow
 private:
     Ui::MainWindow* ui;
     windowOfLogin* m_login;
-    mySocket* m_Socket;
+    myHttp* m_Http;
     int m_flagOfInital;
 
 public:
@@ -34,7 +34,7 @@ signals:
     ;
 
 private:
-    ;
+    void initalWindow();
 };
 
 #endif // MAINWINDOW_H
