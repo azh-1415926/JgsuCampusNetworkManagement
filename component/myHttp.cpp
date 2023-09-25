@@ -15,7 +15,7 @@ myHttp::~myHttp()
     delete m_Socket;
 }
 
-void myHttp::send(const QString& method,const QString& url,const QPair<QString,int> serverInfo,const QList<QPair<QString,QString>>& fields)
+void myHttp::send(const QString& method,const QString& url,const QPair<QString,int> serverInfo,const QList<QPair<QString,QString>>& fields,const QString& content)
 {
     QString str=method.toUpper();
     if(!isInvaildForMethod(str))
@@ -25,9 +25,16 @@ void myHttp::send(const QString& method,const QString& url,const QPair<QString,i
     }
     QString requestMessage;
     requestMessage.append(str+" "+url+" "+HTTP_VERSION+"\r\n");
+    requestMessage.append("Accept:text/html\r\n");
     requestMessage.append("Host:"+serverInfo.first+":"+QString::number(serverInfo.second)+"\r\n");
+    requestMessage.append("Connection:keep-alive\r\n");
     for(int i=0;i<fields.length();i++)
         requestMessage.append(fields[i].first+":"+fields[i].second+"\r\n");
+    if(content.length()>0)
+    {
+        requestMessage.append("Content-Length:"+QString::number(content.length())+"\r\n");
+        requestMessage.append(content+"\r\n");
+    }
     requestMessage.append("\n");
     emit failed("Request : "+ requestMessage);
     m_Socket->abort();

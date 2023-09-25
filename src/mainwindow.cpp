@@ -4,7 +4,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 
-#include "calcMD5.h"
+#include "calcMD5.hpp"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
