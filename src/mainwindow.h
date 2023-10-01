@@ -43,14 +43,15 @@ public slots:
     ;
 
 signals:
+    void sendUserInfo(const QString& account,const QString& passwd);
     void loginFailed(const QString& info);
     void loginSuccess(const QString& info);
+    void switchToNextHost();
 
 private:
     void initalWindow();
     void handleUserInfo(const QString& account,const QString& passwd);
     void goToManagement();
-    void switchHost();
     QString getCookie(QString response);
     void processResponse(const QString& response);
     void processAuthentication(const QString& response);

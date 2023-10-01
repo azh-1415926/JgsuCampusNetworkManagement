@@ -19,6 +19,11 @@ windowOfLogin::~windowOfLogin()
     delete ui;
 }
 
+void windowOfLogin::loadUserInfo(const QString& account,const QString& passwd)
+{
+    ui->inputOfAccount->setText(account);
+    ui->inputOfPassword->setText(passwd);
+}
 
 void windowOfLogin::processLoginFailed(const QString& info)
 {
@@ -49,7 +54,7 @@ void windowOfLogin::login()
     QString password=ui->inputOfPassword->text();
     ui->inputOfAccount->setReadOnly(true);
     ui->inputOfPassword->setReadOnly(true);
-    emit sendInfo(account,password);
+    emit sendUserInfo(account,password);
 }
 
 void windowOfLogin::reset()

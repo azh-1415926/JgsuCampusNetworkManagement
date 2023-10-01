@@ -19,11 +19,12 @@ public:
     ~windowOfLogin();
 
 public slots:
+    void loadUserInfo(const QString& account,const QString& passwd);
     void processLoginFailed(const QString& info);
     void processLoginSuccess(const QString& info);
 
 signals:
-    void sendInfo(const QString& account,const QString& passwd);
+    void sendUserInfo(const QString& account,const QString& passwd);
 
 private:
     void initalLoginBox();

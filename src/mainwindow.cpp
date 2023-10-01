@@ -5,6 +5,7 @@
 #include <QJsonDocument>
 
 #include "calcMD5.hpp"
+#include "settingFile.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -30,21 +31,25 @@ void MainWindow::resizeEvent(QResizeEvent *e)
 {
     if(m_FlagOfInital==0)
     {
+        settingFile setting;
+        setting.load("passwd.json");
+        if(setting.isLoad())
+            sendUserInfo(setting.value("user_account").toString(),setting.value("user_password").toString());
         m_LoginBox->show();
         m_FlagOfInital=1;
+        m_CurrHost=CurrentHost::AUTHENTICATION;
     }
 }
 
 void MainWindow::initalWindow()
 {
-    m_CurrHost=CurrentHost::AUTHENTICATION;
-    connect(m_LoginBox,&windowOfLogin::sendInfo,this,handleUserInfo);
+    connect(this,&MainWindow::sendUserInfo,m_LoginBox,&windowOfLogin::loadUserInfo);
+    connect(m_LoginBox,&windowOfLogin::sendUserInfo,this,handleUserInfo);
     connect(m_Http,&myHttp::failed,this,[=](const QString& error)
     {
         qDebug()<<error;
     });
     connect(m_Http,&myHttp::recv,this,processResponse);
-    connect(m_Http,&myHttp::readed,this,switchHost);
     connect(this,&MainWindow::loginFailed,m_LoginBox,&windowOfLogin::processLoginFailed);
     connect(this,&MainWindow::loginSuccess,m_LoginBox,&windowOfLogin::processLoginSuccess);
     connect(this,&MainWindow::loginSuccess,this,goToManagement);
@@ -62,22 +67,9 @@ void MainWindow::handleUserInfo(const QString &account, const QString &passwd)
 
 void MainWindow::goToManagement()
 {
-    // should save passwd
     QString url="/Self/login/?302=LI";
     QList<QPair<QString,QString>> fields;
-    // fields.push_back(QPair<QString,QString>("Accept","*/*"));
-    // fields.push_back(QPair<QString,QString>("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.36"));
     m_Http->send("get",url,QPair<QString,int>("192.168.168.15",8080),fields);
-}
-
-void MainWindow::switchHost()
-{
-    if(m_CurrHost==CurrentHost::AUTHENTICATION)
-        m_CurrHost=CurrentHost::MANAGEMENT;
-    else if(m_FlagOfCookie&&m_CurrHost==CurrentHost::AUTHENTICATION)
-        m_CurrHost=CurrentHost::NONE;
-    else
-        m_FlagOfCookie=1;
 }
 
 QString MainWindow::getCookie(QString response)
@@ -132,6 +124,10 @@ void MainWindow::processAuthentication(const QString& response)
         else
         {
             m_CurrHost=CurrentHost::MANAGEMENT;
+            settingFile setting;
+            setting.add("user_account",m_Account);
+            setting.add("user_password",m_Password);
+            setting.save("passwd.json");
             emit loginSuccess(msg);
         }
     }
@@ -142,6 +138,7 @@ void MainWindow::processManagement(const QString& response)
     if(m_FlagOfCookie==0)
     {
         m_Cookie=getCookie(QString(response));
+        m_FlagOfCookie=1;
         int begin=m_Cookie.indexOf(":");
         int end=m_Cookie.indexOf(";");
         m_Cookie=m_Cookie.mid(begin+1,end-1-begin).trimmed();
@@ -149,5 +146,12 @@ void MainWindow::processManagement(const QString& response)
         const char* str=calcMD5::toMD5(std::string(m_Password.toUtf8().data())).c_str();
         QString encryptPasswd(str);
         qDebug()<<"md5 : "<<encryptPasswd;
+        QString url="/Self/login/verify";
+        QList<QPair<QString,QString>> fields;
+        QString content="foo=&bar=&account="+m_Account+"&password="+encryptPasswd+"&code=";
+        fields.push_back(QPair<QString,QString>("Cookie",m_Cookie));
+        m_Http->send("post",url,QPair<QString,int>("192.168.168.15",8080),fields,content);
     }
+    else
+        m_CurrHost=CurrentHost::NONE;
 }
