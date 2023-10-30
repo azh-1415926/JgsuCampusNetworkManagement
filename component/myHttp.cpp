@@ -25,7 +25,7 @@ void myHttp::send(const QString& method,const QString& url,const QPair<QString,i
     }
     QString requestMessage;
     requestMessage.append(str+" "+url+" "+HTTP_VERSION+"\r\n");
-    requestMessage.append("Accept:text/html\r\n");
+    // requestMessage.append("Accept:text/html\r\n");
     requestMessage.append("Host:"+serverInfo.first+":"+QString::number(serverInfo.second)+"\r\n");
     requestMessage.append("Connection:keep-alive\r\n");
     for(int i=0;i<fields.length();i++)
@@ -36,7 +36,7 @@ void myHttp::send(const QString& method,const QString& url,const QPair<QString,i
         requestMessage.append(content+"\r\n");
     }
     requestMessage.append("\n");
-    emit failed("Request : "+ requestMessage);
+    // emit failed("Request : "+ requestMessage);
     m_Socket->abort();
     m_Socket->connectToHost(serverInfo.first,serverInfo.second);
     if(!m_Socket->waitForConnected(2000))
@@ -44,7 +44,14 @@ void myHttp::send(const QString& method,const QString& url,const QPair<QString,i
     m_Socket->write(requestMessage.toUtf8().constData(),requestMessage.length());
     if(!m_Socket->waitForReadyRead(2000))
         emit failed(errorPrefix+"Recv time out!");
-    QByteArray data=m_Socket->readAll();
+    QByteArray data;
+    QByteArray temp=m_Socket->readAll();
+    while(!temp.isEmpty())
+    {
+        data.append(temp);
+        m_Socket->waitForReadyRead(100);
+        temp=m_Socket->readAll();
+    }
     QString response(data);
     emit recv(response);
     emit readed();

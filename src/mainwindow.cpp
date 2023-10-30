@@ -3,8 +3,9 @@
 
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QCryptographicHash>
 
-#include "calcMD5.hpp"
+
 #include "settingFile.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -62,13 +63,16 @@ void MainWindow::handleUserInfo(const QString &account, const QString &passwd)
     QString url="/eportal/portal/login?user_account=%2C0%2C"
                 + account + "&user_password=" + passwd;
     QList<QPair<QString,QString>> fields;
-    m_Http->send("get",url,QPair<QString,int>("192.168.167.42",801),fields);
+    fields.push_back(QPair<QString,QString>("Accept","text/html"));
+    m_Http->send("get",url,QPair<QString,int>("192.168.77.18",801),fields);
 }
 
 void MainWindow::goToManagement()
 {
     QString url="/Self/login/?302=LI";
     QList<QPair<QString,QString>> fields;
+    // fields.push_back(QPair<QString,QString>("Accept","text/html"));
+    fields.push_back(QPair<QString,QString>("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWe"));
     m_Http->send("get",url,QPair<QString,int>("192.168.168.15",8080),fields);
 }
 
@@ -82,13 +86,33 @@ QString MainWindow::getCookie(QString response)
     return QString();
 }
 
+void MainWindow::getOnlineList()
+{
+    // QString url="/Self/dashboard/getOnlineList?t=0.11768364794494879&order=asc&_=1695653835657";
+    QString url="/Self/dashboard/getOnlineList?order=asc";
+    QList<QPair<QString,QString>> fields;
+    fields.push_back(QPair<QString,QString>("Cookie",m_Cookie));
+    m_Http->send("get",url,QPair<QString,int>("192.168.168.15",8080),fields);
+}
+
+void MainWindow::logout()
+{
+    QString url="/Self/login/logout";
+    QList<QPair<QString,QString>> fields;
+    fields.push_back(QPair<QString,QString>("Cookie",m_Cookie));
+    m_Http->send("get",url,QPair<QString,int>("192.168.168.15",8080),fields);
+}
+
 void MainWindow::processResponse(const QString &response)
 {
     qDebug()<<"Response : "<<response;
     switch (m_CurrHost)
     {
     case CurrentHost::AUTHENTICATION:
-        processAuthentication(response);
+        if(response.isEmpty())
+            emit loginFailed("loginFailed!");
+        else
+            processAuthentication(response);
         break;
 
     case CurrentHost::MANAGEMENT:
@@ -143,14 +167,14 @@ void MainWindow::processManagement(const QString& response)
         int end=m_Cookie.indexOf(";");
         m_Cookie=m_Cookie.mid(begin+1,end-1-begin).trimmed();
         qDebug()<<"Cookie : "<<m_Cookie;
-        const char* str=calcMD5::toMD5(std::string(m_Password.toUtf8().data())).c_str();
-        QString encryptPasswd(str);
-        qDebug()<<"md5 : "<<encryptPasswd;
+        QString encryptPasswd= QCryptographicHash::hash(m_Password.toLatin1(),QCryptographicHash::Md5).toHex();
         QString url="/Self/login/verify";
         QList<QPair<QString,QString>> fields;
-        QString content="foo=&bar=&account="+m_Account+"&password="+encryptPasswd+"&code=";
+        // QString content="foo=&bar=&account="+m_Account+"&password="+encryptPasswd+"&code=";
+        QString content="foo=&bar=&account="+m_Account+"&password="+m_Password+"&code=";
         fields.push_back(QPair<QString,QString>("Cookie",m_Cookie));
         m_Http->send("post",url,QPair<QString,int>("192.168.168.15",8080),fields,content);
+        getOnlineList();
     }
     else
         m_CurrHost=CurrentHost::NONE;

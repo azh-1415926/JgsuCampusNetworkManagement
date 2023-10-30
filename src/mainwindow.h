@@ -53,6 +53,8 @@ private:
     void handleUserInfo(const QString& account,const QString& passwd);
     void goToManagement();
     QString getCookie(QString response);
+    void getOnlineList();
+    void logout();
     void processResponse(const QString& response);
     void processAuthentication(const QString& response);
     void processManagement(const QString& response);
