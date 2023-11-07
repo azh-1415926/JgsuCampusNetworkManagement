@@ -60,4 +60,6 @@ private:
     void processManagement(const QString& response);
 };
 
+void saveFile(const QString& path,const QString& data);
+
 #endif // MAINWINDOW_H

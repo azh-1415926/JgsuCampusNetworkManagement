@@ -41,8 +41,11 @@ add_executable(${PROJECT_NAME}
     ${components}
 )
 
+add_subdirectory(vendor)
+
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Network)
+target_link_libraries(${PROJECT_NAME} PRIVATE vendor)
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Core5Compat)

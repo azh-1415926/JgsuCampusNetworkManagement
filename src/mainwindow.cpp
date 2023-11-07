@@ -4,7 +4,9 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QCryptographicHash>
-
+#include <QFile>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
 
 #include "settingFile.h"
 
@@ -106,6 +108,7 @@ void MainWindow::logout()
 void MainWindow::processResponse(const QString &response)
 {
     qDebug()<<"Response : "<<response;
+    saveFile("log.txt",response);
     switch (m_CurrHost)
     {
     case CurrentHost::AUTHENTICATION:
@@ -161,7 +164,20 @@ void MainWindow::processManagement(const QString& response)
 {
     if(m_FlagOfCookie==0)
     {
-        m_Cookie=getCookie(QString(response));
+        QString str=response;
+        QString checkcode;
+        QRegularExpression re("<input\\s*type=\"hidden\" name=\"checkcode\" value=\"\\d{4}\">");
+        QRegularExpressionMatch match=re.match(str);
+        if(match.hasMatch())
+        {
+            checkcode=match.captured(0);
+            qDebug()<<"matched:"<<checkcode;
+            checkcode=checkcode.last(6).first(4);
+        }
+        else
+            qDebug()<<"match failed!";
+        qDebug()<<"checkcode:"<<checkcode;
+        m_Cookie=getCookie(str);
         m_FlagOfCookie=1;
         int begin=m_Cookie.indexOf(":");
         int end=m_Cookie.indexOf(";");
@@ -170,12 +186,41 @@ void MainWindow::processManagement(const QString& response)
         QString encryptPasswd= QCryptographicHash::hash(m_Password.toLatin1(),QCryptographicHash::Md5).toHex();
         QString url="/Self/login/verify";
         QList<QPair<QString,QString>> fields;
-        // QString content="foo=&bar=&account="+m_Account+"&password="+encryptPasswd+"&code=";
-        QString content="foo=&bar=&account="+m_Account+"&password="+m_Password+"&code=";
+        QString content="foo=&bar=&checkcode="+checkcode+"&account="+m_Account+"&password="+m_Password+"&code=";
         fields.push_back(QPair<QString,QString>("Cookie",m_Cookie));
+        fields.push_back(QPair<QString,QString>("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWe"));
         m_Http->send("post",url,QPair<QString,int>("192.168.168.15",8080),fields,content);
-        getOnlineList();
+        {
+            QString url="/Self/dashboard";
+            QList<QPair<QString,QString>> fields;
+            fields.push_back(QPair<QString,QString>("Cookie",m_Cookie));
+            m_Http->send("get",url,QPair<QString,int>("192.168.168.15",8080),fields);
+            getOnlineList();
+        }
     }
     else
+    {
         m_CurrHost=CurrentHost::NONE;
+    }
+}
+
+void saveFile(const QString &path,const QString& data)
+{
+    QFile file(path);
+    /* 保存到 path 文件中（只写、追加保存） */
+    if(file.open(QIODevice::WriteOnly|QIODevice::Append))
+    {
+        /* stream 处理文件，设置编码为 utf-8 */
+        QTextStream stream(&file);
+        #if (QT_VERSION < QT_VERSION_CHECK(6,0,0))
+            stream.setCodec("utf-8");
+        #elif (QT_VERSION >= QT_VERSION_CHECK(6,0,0))
+            stream.setEncoding(QStringConverter::Utf8);
+        #endif
+        /* 导出并关闭文件 */
+        stream<<data;
+        file.close();
+    }
+    else
+        qDebug()<<"error","save \""+path+"\" is failed!";
 }
