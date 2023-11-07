@@ -23,8 +23,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 endif()
 
 # 搜寻源文件
-aux_source_directory(./src srcs)
-aux_source_directory(./component components)
+file(GLOB_RECURSE srcs CONFIGURE_DEPENDS src/*.c* include/*.h*)
 
 # ui 文件路径
 list(APPEND CMAKE_AUTOUIC_SEARCH_PATHS "ui")
@@ -38,7 +37,6 @@ add_executable(${PROJECT_NAME}
     # WIN32 # 若需要控制台调试可以注释这一条 # If you need a terminal for debug, please comment this statement
     ${srcs}
     ${uis}
-    ${components}
 )
 
 add_subdirectory(vendor)
@@ -50,5 +48,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE vendor)
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Core5Compat)
 endif()
-target_include_directories(${PROJECT_NAME} PRIVATE component)
+
+target_include_directories(${PROJECT_NAME} PRIVATE include)
+target_include_directories(${PROJECT_NAME} PRIVATE include/component)
 target_include_directories(${PROJECT_NAME} PRIVATE vendor)
