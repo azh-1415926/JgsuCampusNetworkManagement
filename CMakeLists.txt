@@ -51,4 +51,4 @@ endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE include)
 target_include_directories(${PROJECT_NAME} PRIVATE include/component)
-target_include_directories(${PROJECT_NAME} PRIVATE vendor)
+target_include_directories(${PROJECT_NAME} PRIVATE vendor/include)

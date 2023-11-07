@@ -9,6 +9,7 @@
 #include <QRegularExpressionValidator>
 
 #include "settingFile.h"
+#include "httpReader.hpp"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -21,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     initalWindow();
+    qDebug()<<httpReader::load("json/login.json");
 }
 
 MainWindow::~MainWindow()

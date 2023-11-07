@@ -5,7 +5,7 @@ httpMessage::httpMessage(const std::string& method,const std::string& url,const 
 {
 }
 
-~httpMessage()
+httpMessage::~httpMessage()
 {
 }
 
@@ -16,6 +16,7 @@ bool httpMessage::setMethod(const std::string& method)
         m_Method=method;
         return true;
     }
+    return false;
 }
 void httpMessage::setUrl(const std::string& url)
 {
