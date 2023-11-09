@@ -35,8 +35,8 @@ void windowOfLogin::processLoginSuccess(const QString& info)
 {
     QMessageBox::about(this,"Login Success!",info);
     close();
-    QString account=ui->inputOfAccount->text();
-    QString password=ui->inputOfPassword->text();
+    // QString account=ui->inputOfAccount->text();
+    // QString password=ui->inputOfPassword->text();
 }
 
 void windowOfLogin::initalLoginBox()

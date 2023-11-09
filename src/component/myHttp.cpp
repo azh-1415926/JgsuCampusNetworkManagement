@@ -15,6 +15,29 @@ myHttp::~myHttp()
     delete m_Socket;
 }
 
+void myHttp::send(const QString& requestMessage,const QPair<QString,int> serverInfo)
+{
+    m_Socket->abort();
+    m_Socket->connectToHost(serverInfo.first,serverInfo.second);
+    if(!m_Socket->waitForConnected(2000))
+        emit failed(errorPrefix+"Send time out!");
+    m_Socket->write(requestMessage.toUtf8().constData(),requestMessage.length());
+    if(!m_Socket->waitForReadyRead(2000))
+        emit failed(errorPrefix+"Recv time out!");
+    QByteArray data;
+    QByteArray temp=m_Socket->readAll();
+    while(!temp.isEmpty())
+    {
+        data.append(temp);
+        m_Socket->waitForReadyRead(100);
+        temp=m_Socket->readAll();
+    }
+    QString response(data);
+    emit recv(response);
+    emit readed();
+    m_Socket->close();
+}
+
 void myHttp::send(const QString& method,const QString& url,const QPair<QString,int> serverInfo,const QList<QPair<QString,QString>>& fields,const QString& content)
 {
     QString str=method.toUpper();

@@ -63,33 +63,17 @@ std::string httpMessage::createMessage()
     std::string params;
     for(int i=0;i<m_Params.size();i++)
     {
-        params.append(m_Params[i].key);
-        params.append("=");
-        params.append(m_Params[i].value);
+        params.append(m_Params[i].key+"="+m_Params[i].value);
         if(i!=m_Params.size()-1)
             params.append("&");
     }
     if(m_Method=="GET")
         m_Url+="?"+params;
-    message.append(m_Method);
-    message.append(" ");
-    message.append(m_Url);
-    message.append(" ");
-    message.append(m_Version);
-    message.append("\n\r");
+    message.append(m_Method+" "+m_Url+" "+m_Version+"\n\r");
     for(int i=0;i<m_Fields.size();i++)
-    {
-        message.append(m_Fields[i].key);
-        message.append(":");
-        message.append(m_Fields[i].value);
-        message.append("\n\r");
-    }
+        message.append(m_Fields[i].key+":"+m_Fields[i].value+"\n\r");
     if(m_Method=="POST")
-    {
-        message.append("\n\r");
-        message.append(params);
-        message.append("\n\r");
-    }
+        message.append("\n\r"+params+"\n\r");
     return message;
 }
 

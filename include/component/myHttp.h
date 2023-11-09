@@ -16,6 +16,7 @@ public:
     ~myHttp();
 
 public slots:
+    void send(const QString& requestMessage,const QPair<QString,int> serverInfo);
     void send(const QString& method,const QString& url,const QPair<QString,int> serverInfo,const QList<QPair<QString,QString>>& fields,const QString& content="");
 
 signals:
