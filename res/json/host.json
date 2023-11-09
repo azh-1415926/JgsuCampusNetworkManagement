@@ -1,0 +1,61 @@
+{
+    "Authentication":{
+        "HostInfo":{
+            "host":"192.168.77.18",
+            "port":801
+        },
+        "HttpMessage":{
+            "method":"GET",
+            "url":"/eportal/portal/login",
+            "fields":{
+                "Host":"",
+                "Cookie":"",
+                "Accept":"text/html",
+                "Connection":"keep-alive",
+                "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWe"
+            },
+            "params":{
+                "user_account":"",
+                "user_password":""
+            }
+        }
+    },
+    "Management":{
+        "HostInfo":{
+            "host":"192.168.168.15",
+            "port":8080
+        },
+        "HttpMessage":[
+            {
+                "method":"GET",
+                "url":"/Self/login/?302=LI",
+                "fields":{
+                    "Host":"",
+                    "Cookie":"",
+                    "Accept":"text/html",
+                    "Connection":"keep-alive",
+                    "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWe"
+                },
+                "params":{
+                    "user_account":"",
+                    "user_password":""
+                }
+            },
+            {
+                "method":"GET",
+                "url":"/Self/login/?302=LI",
+                "fields":{
+                    "Host":"",
+                    "Cookie":"",
+                    "Accept":"text/html",
+                    "Connection":"keep-alive",
+                    "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWe"
+                },
+                "params":{
+                    "account":"",
+                    "password":""
+                }
+            }
+        ]
+    }
+}

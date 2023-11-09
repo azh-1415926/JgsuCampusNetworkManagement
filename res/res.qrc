@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/json">
+        <file alias="host.json">json/host.json</file>
+    </qresource>
+    <qresource prefix="/json">
+        <file alias="info.json">json/info.json</file>
+    </qresource>
+</RCC>

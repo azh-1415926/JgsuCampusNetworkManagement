@@ -24,6 +24,7 @@ endif()
 
 # 搜寻源文件
 file(GLOB_RECURSE srcs CONFIGURE_DEPENDS src/*.c* include/*.h*)
+file(GLOB_RECURSE qrcs ${CMAKE_CURRENT_SOURCE_DIR}/*.qrc)
 
 # ui 文件路径
 list(APPEND CMAKE_AUTOUIC_SEARCH_PATHS "ui")
@@ -37,6 +38,7 @@ add_executable(${PROJECT_NAME}
     # WIN32 # 若需要控制台调试可以注释这一条 # If you need a terminal for debug, please comment this statement
     ${srcs}
     ${uis}
+    ${qrcs}
 )
 
 add_subdirectory(vendor)

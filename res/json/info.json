@@ -1,0 +1,10 @@
+{
+    "authentication":{
+        "account_name":"user_account",
+        "password_name":"user_password"
+    },
+    "management":{
+        "account_name":"account",
+        "password_name":"password"
+    }
+}
