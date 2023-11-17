@@ -1,10 +1,8 @@
 {
-    "authentication":{
-        "account_name":"user_account",
-        "password_name":"user_password"
-    },
-    "management":{
-        "account_name":"account",
-        "password_name":"password"
-    }
+    "account":"999999999",
+    "password":"999999",
+    "foo":"",
+    "bar":"",
+    "checkcode":"checkcode",
+    "code=":""
 }

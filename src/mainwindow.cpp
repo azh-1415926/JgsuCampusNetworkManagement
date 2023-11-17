@@ -8,8 +8,7 @@
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
 
-#include "settingFile.h"
-#include "httpReader.hpp"
+#include "settingReader.hpp"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -22,7 +21,8 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     initalWindow();
-    qDebug()<<httpReader::load("json/login.json");
+    qDebug()<<settingReader::load(":/json/host.json");
+    
 }
 
 MainWindow::~MainWindow()
@@ -174,7 +174,11 @@ void MainWindow::processManagement(const QString& response)
         {
             checkcode=match.captured(0);
             qDebug()<<"matched:"<<checkcode;
-            checkcode=checkcode.last(6).first(4);
+            #if (QT_VERSION < QT_VERSION_CHECK(6,0,0))
+                checkcode=checkcode.mid(checkcode.length()-1-6,4);
+            #elif (QT_VERSION >= QT_VERSION_CHECK(6,0,0))
+                checkcode=checkcode.last(6).first(4);
+            #endif
         }
         else
             qDebug()<<"match failed!";

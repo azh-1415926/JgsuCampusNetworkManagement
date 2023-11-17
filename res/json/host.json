@@ -8,15 +8,13 @@
             "method":"GET",
             "url":"/eportal/portal/login",
             "fields":{
-                "Host":"",
-                "Cookie":"",
                 "Accept":"text/html",
                 "Connection":"keep-alive",
                 "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWe"
             },
             "params":{
-                "user_account":"",
-                "user_password":""
+                "user_account":"account",
+                "user_password":"password"
             }
         }
     },
@@ -30,30 +28,26 @@
                 "method":"GET",
                 "url":"/Self/login/?302=LI",
                 "fields":{
-                    "Host":"",
-                    "Cookie":"",
                     "Accept":"text/html",
                     "Connection":"keep-alive",
                     "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWe"
-                },
-                "params":{
-                    "user_account":"",
-                    "user_password":""
                 }
             },
             {
-                "method":"GET",
-                "url":"/Self/login/?302=LI",
+                "method":"POST",
+                "url":"Self/login/verify",
                 "fields":{
-                    "Host":"",
-                    "Cookie":"",
                     "Accept":"text/html",
                     "Connection":"keep-alive",
                     "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWe"
                 },
                 "params":{
-                    "account":"",
-                    "password":""
+                    "foo":"foo",
+                    "bar":"bar",
+                    "checkcode":"checkcode",
+                    "account":"account",
+                    "password":"password",
+                    "code=":"code"
                 }
             }
         ]
