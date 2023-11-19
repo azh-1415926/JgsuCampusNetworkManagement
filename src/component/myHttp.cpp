@@ -15,15 +15,22 @@ myHttp::~myHttp()
     delete m_Socket;
 }
 
+/* 发送指定的报文，并提供服务端信息 */
 void myHttp::send(const QString& requestMessage,const QPair<QString,int> serverInfo)
 {
+    /* 终止当前连接并重置套接字 */
     m_Socket->abort();
+    /* 连接到主机 */
     m_Socket->connectToHost(serverInfo.first,serverInfo.second);
+    /* 连接超时时长为 2 秒 */
     if(!m_Socket->waitForConnected(2000))
         emit failed(errorPrefix+"Send time out!");
+    /* 往套接字中写入数据 */
     m_Socket->write(requestMessage.toUtf8().constData(),requestMessage.length());
+    /* 等待接收超时时长为 2 秒 */
     if(!m_Socket->waitForReadyRead(2000))
         emit failed(errorPrefix+"Recv time out!");
+    /* 接收所有数据 */
     QByteArray data;
     QByteArray temp=m_Socket->readAll();
     while(!temp.isEmpty())
@@ -38,21 +45,25 @@ void myHttp::send(const QString& requestMessage,const QPair<QString,int> serverI
     m_Socket->close();
 }
 
+/* 提供请求方式、URL、服务端信息、字段、正文内容合成报文并发送请求 */
 void myHttp::send(const QString& method,const QString& url,const QPair<QString,int> serverInfo,const QList<QPair<QString,QString>>& fields,const QString& content)
 {
+    /* 判断请求方式是否合法 */
     QString str=method.toUpper();
     if(!isInvaildForMethod(str))
     {
         emit failed(errorPrefix+"method is invaild! Error method is "+str);
         return;
     }
+    /* 生成请求报文 */
     QString requestMessage;
+    /* 拼接请求行 */
     requestMessage.append(str+" "+url+" "+HTTP_VERSION+"\r\n");
-    // requestMessage.append("Accept:text/html\r\n");
+    /* 拼接请求头 */
     requestMessage.append("Host:"+serverInfo.first+":"+QString::number(serverInfo.second)+"\r\n");
-    requestMessage.append("Connection:keep-alive\r\n");
     for(int i=0;i<fields.length();i++)
         requestMessage.append(fields[i].first+":"+fields[i].second+"\r\n");
+    /* 拼接请求正文 */
     if(content.length()>0)
     {
         requestMessage.append("Content-Length:"+QString::number(content.length())+"\r\n");
@@ -60,6 +71,7 @@ void myHttp::send(const QString& method,const QString& url,const QPair<QString,i
     }
     requestMessage.append("\n");
     // emit failed("Request : "+ requestMessage);
+    /* 终止当前连接并重置套接字 */
     m_Socket->abort();
     m_Socket->connectToHost(serverInfo.first,serverInfo.second);
     if(!m_Socket->waitForConnected(2000))
@@ -67,6 +79,7 @@ void myHttp::send(const QString& method,const QString& url,const QPair<QString,i
     m_Socket->write(requestMessage.toUtf8().constData(),requestMessage.length());
     if(!m_Socket->waitForReadyRead(2000))
         emit failed(errorPrefix+"Recv time out!");
+    /* 接收所有数据 */
     QByteArray data;
     QByteArray temp=m_Socket->readAll();
     while(!temp.isEmpty())
@@ -81,11 +94,13 @@ void myHttp::send(const QString& method,const QString& url,const QPair<QString,i
     m_Socket->close();
 }
 
+/* 初始化 http，暂无内容 */
 void myHttp::initalHttp()
 {
     ;
 }
 
+/* 判断请求方式是否合法 */
 bool myHttp::isInvaildForMethod(const QString &method)
 {
     static QList<QString> methods=

@@ -5,13 +5,16 @@
 #include <QJsonDocument>
 #include <QFile>
 
+/* 用于读取导出 json 配置文件 */
 class settingFile : public QObject
 {
     Q_OBJECT
 
     private:
+        /* Json 对象、Json 文档 */
         QJsonObject m_Json;
         QJsonDocument m_Doc;
+        /* 读取的标志 */
         int m_LoadFlag;
 
     public:
@@ -49,6 +52,7 @@ class settingFile : public QObject
             array.push_back(second);
             m_Json.insert(key,array);
         }
+        /* 删除指定关键字 */
         inline void remove(const QString& key){ m_Json.remove(key); }
         /* 判定是否已导入 */
         inline bool isLoad() const { return m_LoadFlag==1; }
