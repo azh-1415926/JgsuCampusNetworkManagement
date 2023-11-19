@@ -15,14 +15,13 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
     , m_LoginBox(new windowOfLogin)
     , m_Http(new myHttp)
+    , m_Info(new settingFile)
     , m_FlagOfInital(0)
     , m_FlagOfCookie(0)
-    , m_CurrHost(CurrentHost::NONE)
 {
     ui->setupUi(this);
+    initalSetting();
     initalWindow();
-    qDebug()<<settingReader::load(":/json/host.json");
-    
 }
 
 MainWindow::~MainWindow()
@@ -30,97 +29,65 @@ MainWindow::~MainWindow()
     delete ui;
     delete m_LoginBox;
     delete m_Http;
+    delete m_Info;
 }
 
 void MainWindow::resizeEvent(QResizeEvent *e)
 {
     if(m_FlagOfInital==0)
     {
-        settingFile setting;
-        setting.load("passwd.json");
-        if(setting.isLoad())
-            sendUserInfo(setting.value("user_account").toString(),setting.value("user_password").toString());
+        sendUserInfo(m_Info->value("account").toString(),m_Info->value("password").toString());
         m_LoginBox->show();
         m_FlagOfInital=1;
-        m_CurrHost=CurrentHost::AUTHENTICATION;
     }
 }
 
-void MainWindow::initalWindow()
+void MainWindow::saveAttribute(const QString &key, const QString &value)
 {
-    connect(this,&MainWindow::sendUserInfo,m_LoginBox,&windowOfLogin::loadUserInfo);
-    connect(m_LoginBox,&windowOfLogin::sendUserInfo,this,handleUserInfo);
-    connect(m_Http,&myHttp::failed,this,[=](const QString& error)
+    m_Info->add(key,value);
+    m_Info->save("info.json");
+}
+
+void MainWindow::sendHttpMessage(const QString& host)
+{
+    int pos=m_Hosts.indexOf(host);
+    if(pos==-1)
+        return;
+    for(int i=0;i<m_Messages.at(pos).length(); i++)
     {
-        qDebug()<<error;
-    });
-    connect(m_Http,&myHttp::recv,this,processResponse);
-    connect(this,&MainWindow::loginFailed,m_LoginBox,&windowOfLogin::processLoginFailed);
-    connect(this,&MainWindow::loginSuccess,m_LoginBox,&windowOfLogin::processLoginSuccess);
-    connect(this,&MainWindow::loginSuccess,this,goToManagement);
-}
-
-void MainWindow::handleUserInfo(const QString &account, const QString &passwd)
-{
-    m_Account=account;
-    m_Password=passwd;
-    QString url="/eportal/portal/login?user_account=%2C0%2C"
-                + account + "&user_password=" + passwd;
-    QList<QPair<QString,QString>> fields;
-    fields.push_back(QPair<QString,QString>("Accept","text/html"));
-    m_Http->send("get",url,QPair<QString,int>("192.168.77.18",801),fields);
-}
-
-void MainWindow::goToManagement()
-{
-    QString url="/Self/login/?302=LI";
-    QList<QPair<QString,QString>> fields;
-    // fields.push_back(QPair<QString,QString>("Accept","text/html"));
-    fields.push_back(QPair<QString,QString>("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWe"));
-    m_Http->send("get",url,QPair<QString,int>("192.168.168.15",8080),fields);
-}
-
-QString MainWindow::getCookie(QString response)
-{
-    QString line;
-    QTextStream text(&response);
-    while(!(line =text.readLine()).isNull())
-        if(line.contains("Set-Cookie"))
-            return line;
-    return QString();
-}
-
-void MainWindow::getOnlineList()
-{
-    // QString url="/Self/dashboard/getOnlineList?t=0.11768364794494879&order=asc&_=1695653835657";
-    QString url="/Self/dashboard/getOnlineList?order=asc";
-    QList<QPair<QString,QString>> fields;
-    fields.push_back(QPair<QString,QString>("Cookie",m_Cookie));
-    m_Http->send("get",url,QPair<QString,int>("192.168.168.15",8080),fields);
-}
-
-void MainWindow::logout()
-{
-    QString url="/Self/login/logout";
-    QList<QPair<QString,QString>> fields;
-    fields.push_back(QPair<QString,QString>("Cookie",m_Cookie));
-    m_Http->send("get",url,QPair<QString,int>("192.168.168.15",8080),fields);
+        QJsonObject message=m_Messages.at(pos).at(i);
+        QJsonObject params=message.value("params").toObject();
+        for(const auto& j : params.keys())
+        {
+            QString value;
+            const QStringList& strs=params.value(j).toString().split("+");
+            for(const auto& k : strs)
+                value.append(m_Info->value(k).toString());
+            params.insert(j,value);
+        }
+        message.insert("params",params);
+        const QString& hostInfo=message.value("fields").toObject().value("Host").toString();
+        const QStringList& list=hostInfo.split(":");
+        qDebug()<<"Message:"<<httpReader::load(message);
+        m_Http->send(httpReader::load(message),QPair<QString,int>(list.at(0),list.at(1).toInt()));
+    }
 }
 
 void MainWindow::processResponse(const QString &response)
 {
     qDebug()<<"Response : "<<response;
     saveFile("log.txt",response);
-    switch (m_CurrHost)
+    int pos=m_Hosts.indexOf(m_CurrHost);
+    switch (pos)
     {
-    case CurrentHost::AUTHENTICATION:
+    case 0:
         if(response.isEmpty())
-            emit loginFailed("loginFailed!");
+            emit logged(false,"loginFailed!");
         else
             processAuthentication(response);
         break;
 
-    case CurrentHost::MANAGEMENT:
+    case 1:
         processManagement(response);
         break;
 
@@ -148,17 +115,8 @@ void MainWindow::processAuthentication(const QString& response)
         int ret=json.value("ret_code").toInt();
         QString msg=json.value("msg").toString();
         qDebug()<<"ret_code : "<<ret;
-        if(ret!=2&&ret!=0)
-            emit loginFailed(msg);
-        else
-        {
-            m_CurrHost=CurrentHost::MANAGEMENT;
-            settingFile setting;
-            setting.add("user_account",m_Account);
-            setting.add("user_password",m_Password);
-            setting.save("passwd.json");
-            emit loginSuccess(msg);
-        }
+        bool status=(ret!=2&&ret!=0)?false:true;
+        logged(status,msg);
     }
 }
 
@@ -183,31 +141,64 @@ void MainWindow::processManagement(const QString& response)
         else
             qDebug()<<"match failed!";
         qDebug()<<"checkcode:"<<checkcode;
-        m_Cookie=getCookie(str);
+        const QString& cookie=myHttp::getCookie(str);
+        saveAttribute("checkcode",checkcode);
+        saveAttribute("Cookie",cookie);
         m_FlagOfCookie=1;
-        int begin=m_Cookie.indexOf(":");
-        int end=m_Cookie.indexOf(";");
-        m_Cookie=m_Cookie.mid(begin+1,end-1-begin).trimmed();
-        qDebug()<<"Cookie : "<<m_Cookie;
-        QString encryptPasswd= QCryptographicHash::hash(m_Password.toLatin1(),QCryptographicHash::Md5).toHex();
-        QString url="/Self/login/verify";
-        QList<QPair<QString,QString>> fields;
-        QString content="foo=&bar=&checkcode="+checkcode+"&account="+m_Account+"&password="+m_Password+"&code=";
-        fields.push_back(QPair<QString,QString>("Cookie",m_Cookie));
-        fields.push_back(QPair<QString,QString>("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWe"));
-        m_Http->send("post",url,QPair<QString,int>("192.168.168.15",8080),fields,content);
-        {
-            QString url="/Self/dashboard";
-            QList<QPair<QString,QString>> fields;
-            fields.push_back(QPair<QString,QString>("Cookie",m_Cookie));
-            m_Http->send("get",url,QPair<QString,int>("192.168.168.15",8080),fields);
-            getOnlineList();
-        }
+        //QString encryptPasswd=QCryptographicHash::hash(m_Info->value("password").toString().toLatin1(),QCryptographicHash::Md5).toHex();
+    }
+}
+
+void MainWindow::initalSetting()
+{
+    QFile file1("host.json");
+    settingFile host;
+    if(!(file1.exists()))
+    {
+        host.load(":/json/host.json");
+        host.save("host.json");
     }
     else
+        host.load("host.json");
+    const auto& list=settingReader::load(host.toJson());
+    for(const auto& i : list)
     {
-        m_CurrHost=CurrentHost::NONE;
+        m_Hosts.push_back(i.first);
+        m_Messages.push_back(i.second);
     }
+    QFile file2("info.json");
+    if(!(file2.exists()))
+        m_Info->load(":/json/info.json");
+    else
+        m_Info->load("info.json");
+}
+
+void MainWindow::initalWindow()
+{
+    connect(this,&MainWindow::sendUserInfo,m_LoginBox,&windowOfLogin::loadUserInfo);
+    connect(m_LoginBox,&windowOfLogin::sendUserInfo,this,[=](const QString &account, const QString &password)
+    {
+        saveAttribute("account",account);
+        saveAttribute("password",password);
+        m_CurrHost=m_Hosts.at(0);
+        sendHttpMessage(m_CurrHost);
+    });
+    connect(m_Http,&myHttp::failed,this,[=](const QString& error)
+    {
+        qDebug()<<error;
+    });
+    connect(m_Http,&myHttp::recv,this,&MainWindow::processResponse);
+    connect(this,&MainWindow::logged,this,[=](bool status,const QString& info)
+    {
+        if(status)
+        {
+            m_LoginBox->processLoginSuccess(info);
+            m_CurrHost=m_Hosts.at(1);
+            sendHttpMessage(m_CurrHost);
+        }
+        else
+            m_LoginBox->processLoginFailed(info);
+    });
 }
 
 void saveFile(const QString &path,const QString& data)

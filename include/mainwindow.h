@@ -6,16 +6,11 @@
 #include "windowOfLogin.h"
 #include "myHttp.h"
 
+class settingFile;
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
-
-enum class CurrentHost
-{
-    NONE=-1,
-    AUTHENTICATION=0,
-    MANAGEMENT=1
-};
 
 class MainWindow : public QMainWindow
 {
@@ -25,12 +20,12 @@ private:
     Ui::MainWindow* ui;
     windowOfLogin* m_LoginBox;
     myHttp* m_Http;
-    QString m_Account;
-    QString m_Password;
-    QString m_Cookie;
+    settingFile* m_Info;
+    QList<QString> m_Hosts;
+    QList<QList<QJsonObject>> m_Messages;
     int m_FlagOfInital;
     int m_FlagOfCookie;
-    CurrentHost m_CurrHost;
+    QString m_CurrHost;
 
 public:
     MainWindow(QWidget *parent = nullptr);
@@ -42,22 +37,20 @@ protected:
 public slots:
     ;
 
-signals:
-    void sendUserInfo(const QString& account,const QString& passwd);
-    void loginFailed(const QString& info);
-    void loginSuccess(const QString& info);
-    void switchToNextHost();
-
-private:
-    void initalWindow();
-    void handleUserInfo(const QString& account,const QString& passwd);
-    void goToManagement();
-    QString getCookie(QString response);
-    void getOnlineList();
-    void logout();
+private slots:
+    void saveAttribute(const QString& key,const QString& value);
+    void sendHttpMessage(const QString& message);
     void processResponse(const QString& response);
     void processAuthentication(const QString& response);
     void processManagement(const QString& response);
+
+signals:
+    void sendUserInfo(const QString& account,const QString& passwd);
+    void logged(bool status,const QString& info);
+
+private:
+    void initalWindow();
+    void initalSetting();
 };
 
 void saveFile(const QString& path,const QString& data);

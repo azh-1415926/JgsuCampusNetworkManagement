@@ -13,7 +13,7 @@
                 "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWe"
             },
             "params":{
-                "user_account":"account",
+                "user_account":"prefixOfAccount+account",
                 "user_password":"password"
             }
         }
@@ -39,6 +39,7 @@
                 "fields":{
                     "Accept":"text/html",
                     "Connection":"keep-alive",
+                    "Cookie":"Cookie",
                     "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWe"
                 },
                 "params":{
@@ -48,6 +49,21 @@
                     "account":"account",
                     "password":"password",
                     "code=":"code"
+                }
+            },
+            {
+                "method":"GET",
+                "url":"/Self/dashboard/getOnlineList",
+                "fields":{
+                    "Accept":"text/html",
+                    "Connection":"keep-alive",
+                    "Cookie":"Cookie",
+                    "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWe"
+                },
+                "params":{
+                    "t":"t",
+                    "order":"order",
+                    "_":"_"
                 }
             }
         ]
