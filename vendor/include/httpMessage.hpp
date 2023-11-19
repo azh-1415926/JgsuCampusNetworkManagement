@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+/* 报文的字段 */
 struct messageField
 {
     std::string key;
@@ -15,22 +16,29 @@ struct messageField
     }
 };
 
+/* http 报文 */
 class httpMessage
 {
 private:
+    /* 请求方式、URL、HTTP 版本 */
     std::string m_Method;
     std::string m_Url;
     std::string m_Version;
+    /* 字段、参数 */
     std::vector<messageField> m_Fields;
     std::vector<messageField> m_Params;
+    /* 正文内容 */
     std::string m_Content;
+    /* 主机(ip或域名)、端口 */
     std::string m_Host;
     int m_Port;
 
 public:
+    /* 默认请求方法为 GET，url 为空，HTTP 版本为 1.1 */
     httpMessage(const std::string& method="GET",const std::string& url="",const std::string& version="HTTP/1.1")
         :m_Method(method),m_Url(url),m_Version(version){ }
     ~httpMessage(){}
+    /* 设置请求方式 */
     inline bool setMethod(const std::string& method)
     {
         if(isInvaildForMethod(method))
@@ -40,16 +48,27 @@ public:
         }
         return false;
     }
+    /* 设置 URL */
     inline void setUrl(const std::string& url){ m_Url=url; }
+    /* 获取 URL */
     inline std::string& url(){ return m_Url; }
+    /* 设置正文内容 */
     inline void setContent(const std::string& content){ m_Content=content; }
+    /* 获取正文内容 */
     inline std::string& content(){ return m_Content; }
+    /* 设置主机 */
     inline void setHost(const std::string& host){ m_Host=host; }
+    /* 获取主机 */
     inline std::string& host(){ return m_Host; }
+    /* 设置端口 */
     inline void setPort(int port){ if(port>0&&port<65535) m_Port=port; }
+    /* 获取端口 */
     inline int port(){ return m_Port; }
+    /* 添加参数 */
     inline void addParam(const std::string& key,const std::string& value){ m_Params.push_back(messageField(key,value)); }
+    /* 添加字段 */
     inline void addField(const std::string& key,const std::string& value){ m_Fields.push_back(messageField(key,value)); }
+    /* 删除字段 */
     std::string removeField(const std::string& key)
     {
         std::vector<messageField>::iterator i;
@@ -58,6 +77,7 @@ public:
                 return i->value;
         return std::string();
     }
+    /* 创建 http 报文 */
     std::string createMessage()
     {
         std::string message;
@@ -70,15 +90,17 @@ public:
         }
         if(m_Method=="GET")
             m_Url+="?"+params;
-        message.append(m_Method+" "+m_Url+" "+m_Version+"\n\r");
+        message.append(m_Method+" "+m_Url+" "+m_Version+"\r\n");
         for(int i=0;i<m_Fields.size();i++)
-            message.append(m_Fields[i].key+":"+m_Fields[i].value+"\n\r");
+            message.append(m_Fields[i].key+":"+m_Fields[i].value+"\r\n");
         if(m_Method=="POST")
-            message.append("\n\r"+params+"\n\r");
+            message.append("\r\n"+params+"\r\n");
+        message.append("\r\n");
         return message;
     }
 
 private:
+    /* 判断请求方式是否合法 */
     bool isInvaildForMethod(const std::string& method)
     {
         static std::string methods[8]=
