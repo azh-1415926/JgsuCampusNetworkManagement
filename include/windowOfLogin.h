@@ -23,13 +23,16 @@ public slots:
     void processLoginFailed(const QString& info);
     void processLoginSuccess(const QString& info);
 
+private slots:
+    void initalLoginBox();
+    void login();
+    void reset();
+
 signals:
     void sendUserInfo(const QString& account,const QString& passwd);
 
 private:
-    void initalLoginBox();
-    void login();
-    void reset();
+    ;
 };
 
 #endif // WINDOWOFLOGIN_H
