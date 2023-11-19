@@ -71,8 +71,6 @@ class settingFile : public QObject
                 m_LoadFlag=1;
             emit loaded();
         }
-        /* 获得 json 对象 */
-        inline QJsonObject toJson(){ return m_Json; }
         /* 导入 json 文件 */
         void load(const QString& path)
         {
@@ -103,6 +101,8 @@ class settingFile : public QObject
                 m_LoadFlag=1;
             emit loaded();
         }
+        /* 获得 json 对象 */
+        inline QJsonObject toJson(){ return m_Json; }
         /* 导出为 json 文件 */
         void save(const QString& path)
         {

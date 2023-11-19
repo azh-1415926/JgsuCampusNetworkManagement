@@ -14,6 +14,20 @@ private:
 public:
     myHttp(QObject *parent = nullptr);
     ~myHttp();
+    static QString getCookie(QString response)
+    {
+        QString line;
+        QTextStream text(&response);
+        while(!(line =text.readLine()).isNull())
+            if(line.contains("Set-Cookie"))
+            {
+                int begin=line.indexOf(":");
+                int end=line.indexOf(";");
+                line=line.mid(begin+1,end-1-begin).trimmed();
+                return line;
+            }
+        return QString();
+    }
 
 public slots:
     void send(const QString& requestMessage,const QPair<QString,int> serverInfo);
