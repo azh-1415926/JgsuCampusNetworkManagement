@@ -51,6 +51,7 @@ signals:
 private:
     void initalWindow();
     void initalSetting();
+    QString processParam(const QString& method,const QString& param);
 };
 
 void saveFile(const QString& path,const QString& data);

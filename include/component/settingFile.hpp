@@ -105,8 +105,20 @@ class settingFile : public QObject
                 m_LoadFlag=1;
             emit loaded();
         }
-        /* 获得 json 对象 */
+        /* 获得内部 json 对象 */
         inline QJsonObject toJson(){ return m_Json; }
+        /* 通过 json 文档 导出为 json 对象 */
+        static QJsonObject toJson(const QString& str)
+        {
+            QJsonParseError error;
+            QJsonDocument doc=QJsonDocument::fromJson(str.toUtf8(),&error);
+            if(error.error!=QJsonParseError::NoError&&!doc.isNull())
+            {
+                qDebug()<<"json parse error","json 格式错误!";
+                return QJsonObject();
+            }
+            return doc.object();
+        }
         /* 导出为 json 文件 */
         void save(const QString& path)
         {

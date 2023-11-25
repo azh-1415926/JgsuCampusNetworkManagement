@@ -20,7 +20,9 @@ MainWindow::MainWindow(QWidget *parent)
     , m_FlagOfCookie(0)
 {
     ui->setupUi(this);
+    /* 初始化设置，导入需要发送的 http 请求信息 */
     initalSetting();
+    /* 初始化窗口，在第一次显示窗口的时候弹出登录框 */
     initalWindow();
 }
 
@@ -34,35 +36,55 @@ MainWindow::~MainWindow()
 
 void MainWindow::resizeEvent(QResizeEvent *e)
 {
+    /* 只执行一次 */
     if(m_FlagOfInital==0)
     {
+        /* 发送账号密码信息到 m_LoginBox，并显示，即登录框 */
         sendUserInfo(m_Info->value("account").toString(),m_Info->value("password").toString());
         m_LoginBox->show();
         m_FlagOfInital=1;
     }
 }
 
+/* 保存属性的值，保存到 info.json 文件 */
 void MainWindow::saveAttribute(const QString &key, const QString &value)
 {
     m_Info->add(key,value);
     m_Info->save("info.json");
 }
 
+/* 给定某个主机的关键字，发送其中的 http 请求 */
 void MainWindow::sendHttpMessage(const QString& host)
 {
+    /* pos 为该关键字在所有主机中的位置，若为 -1，则不存在 */
     int pos=m_Hosts.indexOf(host);
     if(pos==-1)
         return;
+    /* 取出该主机中所有的 http 报文对象 */
     for(int i=0;i<m_Messages.at(pos).length(); i++)
     {
-        QJsonObject message=m_Messages.at(pos).at(i);
-        QJsonObject params=message.value("params").toObject();
+        /* message 为该主机第 i 个报文对象 */
+        auto message=m_Messages.at(pos).at(i);
+        /* params 为该报文对象的参数对象 */
+        auto params=message.value("params").toObject();
+        /* 更新 params 中所有变量的值，从 m_Info 中取对应的值 */
         for(const auto& j : params.keys())
         {
+            /* value 为关键字 j 的最终的值 */
             QString value;
-            const QStringList& strs=params.value(j).toString().split("+");
-            for(const auto& k : strs)
-                value.append(m_Info->value(k).toString());
+            /* args 为分割后所有的子变量，如该关键字的值为 arg1+arg2，则拆成 arg1、arg2 */
+            const auto& args=params.value(j).toString().split("+");
+            for(const auto& k : args)
+            {
+                /* k 为子变量，可能需要被特殊处理（如 md5 加密） */
+                const auto& strs=k.split("|");
+                /* strs 为所有处理操作的集合（最后一个为需要处理的值），按照从右到左的顺序处理 */
+                auto str=strs.at(strs.length()-1);
+                for(int index=strs.length()-2;index>=0;index--)
+                    str=processParam(strs.at(index),m_Info->value(str).toString());
+                /* 拼接所有处理好的 arg（如果有需要的话） */
+                value.append(str);
+            }
             params.insert(j,value);
         }
         message.insert("params",params);
@@ -102,19 +124,9 @@ void MainWindow::processAuthentication(const QString& response)
     int end=response.lastIndexOf("}");
     if(begin!=-1&&end!=-1)
     {
-        QString str=response.mid(begin,end+1-begin);
-        qDebug()<<"json : "<<str;
-        QJsonParseError error;
-        QJsonDocument doc=QJsonDocument::fromJson(str.toUtf8(),&error);
-        if(error.error!=QJsonParseError::NoError&&!doc.isNull())
-        {
-            qDebug()<<"json parse error","json 格式错误!";
-            return;
-        }
-        QJsonObject json=doc.object();
+        QJsonObject json=settingFile::toJson(response.mid(begin,end+1-begin));
         int ret=json.value("ret_code").toInt();
         QString msg=json.value("msg").toString();
-        qDebug()<<"ret_code : "<<ret;
         bool status=(ret!=2&&ret!=0)?false:true;
         logged(status,msg);
     }
@@ -145,7 +157,6 @@ void MainWindow::processManagement(const QString& response)
         saveAttribute("checkcode",checkcode);
         saveAttribute("Cookie",cookie);
         m_FlagOfCookie=1;
-        //QString encryptPasswd=QCryptographicHash::hash(m_Info->value("password").toString().toLatin1(),QCryptographicHash::Md5).toHex();
     }
 }
 
@@ -199,6 +210,13 @@ void MainWindow::initalWindow()
         else
             m_LoginBox->processLoginFailed(info);
     });
+}
+
+QString MainWindow::processParam(const QString &method, const QString &param)
+{
+    if(method=="Md5")
+        return QCryptographicHash::hash(param.toLatin1(),QCryptographicHash::Md5).toHex();
+    return param;
 }
 
 void saveFile(const QString &path,const QString& data)

@@ -47,7 +47,7 @@
                     "bar":"bar",
                     "checkcode":"checkcode",
                     "account":"account",
-                    "password":"password",
+                    "password":"Md5|password",
                     "code=":"code"
                 }
             },
