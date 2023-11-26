@@ -79,7 +79,7 @@ void MainWindow::sendHttpMessage(const QString& host)
                 /* k 为子变量，可能需要被特殊处理（如 md5 加密） */
                 const auto& strs=k.split("|");
                 /* strs 为所有处理操作的集合（最后一个为需要处理的值），按照从右到左的顺序处理 */
-                auto str=strs.at(strs.length()-1);
+                auto str=(strs.length()>1)?(strs.at(strs.length()-1)):m_Info->value(strs.at(0)).toString();
                 for(int index=strs.length()-2;index>=0;index--)
                     str=processParam(strs.at(index),m_Info->value(str).toString());
                 /* 拼接所有处理好的 arg（如果有需要的话） */
@@ -97,7 +97,7 @@ void MainWindow::sendHttpMessage(const QString& host)
 
 void MainWindow::processResponse(const QString &response)
 {
-    qDebug()<<"Response : "<<response;
+    qDebug()<<"Response : "<<response.first(response.length()>512?512:response.length())<<"\nContent is mesh,please look at log.txt";
     saveFile("log.txt",response);
     int pos=m_Hosts.indexOf(m_CurrHost);
     switch (pos)
