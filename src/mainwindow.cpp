@@ -88,10 +88,14 @@ void MainWindow::sendHttpMessage(const QString& host)
             params.insert(j,value);
         }
         message.insert("params",params);
-        const QString& hostInfo=message.value("fields").toObject().value("Host").toString();
-        const QStringList& list=hostInfo.split(":");
+        auto fields=message.value("fields").toObject();
+        const QString& hostInfo=fields.value("Host").toString();
+        const QString& cookie=fields.value("Cookie").toString();
+        const QStringList& host=hostInfo.split(":");
+        fields.insert("Cookie",m_Info->value(cookie).toString());
+        message.insert("fields",fields);
         qDebug()<<"Message:"<<httpReader::load(message);
-        m_Http->send(httpReader::load(message),QPair<QString,int>(list.at(0),list.at(1).toInt()));
+        m_Http->send(httpReader::load(message),QPair<QString,int>(host.at(0),host.at(1).toInt()));
     }
 }
 

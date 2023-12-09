@@ -22,8 +22,10 @@ public:
         /* 对应 field 属性和 params 属性需要特殊处理 */
         const QJsonObject& fields=json.value("fields").toObject();
         const QJsonObject& params=json.value("params").toObject();
+        bool hasCookie=json.value("Cookie").toBool();
         for(const auto& i:fields.keys())
-            message.addField(i.toStdString(),fields.value(i).toString().toStdString());
+            if(!hasCookie&&i!="Cookie"||hasCookie&&i=="Cookie")
+                message.addField(i.toStdString(),fields.value(i).toString().toStdString());
         for(const auto& i:params.keys())
             message.addParam(i.toStdString(),params.value(i).toString().toStdString());
         return QString::fromStdString(message.createMessage());

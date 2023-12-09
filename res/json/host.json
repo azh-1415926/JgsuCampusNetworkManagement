@@ -15,7 +15,8 @@
             "params":{
                 "user_account":"prefixOfAccount+account",
                 "user_password":"password"
-            }
+            },
+            "Cookie":false
         }
     },
     "Management":{
@@ -38,8 +39,8 @@
                 "url":"Self/login/verify",
                 "fields":{
                     "Accept":"text/html",
+                    "Cookie":"cookie",
                     "Connection":"keep-alive",
-                    "Cookie":"Cookie",
                     "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWe"
                 },
                 "params":{
@@ -49,22 +50,24 @@
                     "account":"account",
                     "password":"password",
                     "code=":"code"
-                }
+                },
+                "Cookie":true
             },
             {
                 "method":"GET",
                 "url":"/Self/dashboard/getOnlineList",
                 "fields":{
                     "Accept":"text/html",
+                    "Cookie":"cookie",
                     "Connection":"keep-alive",
-                    "Cookie":"Cookie",
                     "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWe"
                 },
                 "params":{
                     "t":"t",
                     "order":"order",
                     "_":"_"
-                }
+                },
+                "Cookie":true
             }
         ]
     }
